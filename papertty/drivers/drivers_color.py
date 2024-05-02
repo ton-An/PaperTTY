@@ -668,6 +668,7 @@ class EPD7in3f(WaveshareColor):
         if self.epd_init() != 0:
             return -1
 
+        # EPD hardware init start
         self.reset()
         self.wait_until_busy()
         self.delay_ms(30)
@@ -691,6 +692,7 @@ class EPD7in3f(WaveshareColor):
         self.send_command(self.PANEL_SETTING)
         self.send_data(0x5F)
         self.send_data(0x69)
+
 
         self.send_command(self.POWER_OFF_SEQUENCE_SETTING)
         self.send_data(0x00)
@@ -753,7 +755,7 @@ class EPD7in3f(WaveshareColor):
 
         self.send_command(0xE0)   # CCSET
         self.send_data(0x00)
-       
+
         self.send_command(0xE6)   # TSSET
         self.send_data(0x00)
 
@@ -815,6 +817,7 @@ class EPD7in3f(WaveshareColor):
         self.send_data(0xA5)
 
         self.delay_ms(2000)
+        # self.digital_write(self.RST_PIN, 0) maybe??
 
     def turn_on_display(self):
         self.send_command(self.POWER_ON) # POWER_ON
