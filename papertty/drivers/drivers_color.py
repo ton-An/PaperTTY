@@ -621,3 +621,209 @@ class EPD5in83b(EPD5in83):
         self.send_command(self.DISPLAY_REFRESH)
         self.delay_ms(100)
         self.wait_until_idle()
+
+
+class EPD7in3f(WaveshareColor):
+    """Waveshare 7.3" - 7 colors"""
+
+    LUT_BLACK = 0x000000  # 0000  BGR
+    LUT_WHITE = 0xffffff  # 0001
+    LUT_GREEN = 0x00ff00  # 0010
+    LUT_BLUE = 0xff0000  # 0011
+    LUT_RED = 0x0000ff  # 0100
+    LUT_YELLOW = 0x00ffff  # 0101
+    LUT_ORANGE = 0x0080ff  # 0110
+    POWER_SAVING = 0xE3
+    TCON_RESOLUTION = 0x61
+    TEMPERATURE_CALIBRATION = 0x41
+
+    def __init__(self):
+        super().__init__(name='7.3" F', width=800, height=480)
+
+    def reset(self):
+        self.digital_write(self.RST_PIN, 1)
+        self.delay_ms(20)
+        self.digital_write(self.RST_PIN, 0)
+        self.delay_ms(2)
+        self.digital_write(self.RST_PIN, 1)
+        self.delay_ms(20)
+
+    def send_command(self, command):
+        self.digital_write(self.DC_PIN, 0)
+        self.digital_write(self.CS_PIN, 0)
+        self.spi_transfer([command])
+        self.digital_write(self.CS_PIN, 1)
+
+    def send_data(self, data):
+        self.digital_write(self.DC_PIN, 1)
+        self.digital_write(self.CS_PIN, 0)
+        self.spi_transfer([data])
+        self.digital_write(self.CS_PIN, 1)
+
+    def wait_until_busy(self):
+        while self.digital_read(self.BUSY_PIN) == 0:  # 0: idle, 1: busy
+            self.delay_ms(5)
+
+    def init(self, **kwargs):
+        if self.epd_init() != 0:
+            return -1
+
+        self.reset()
+        self.wait_until_busy()
+        self.delay_ms(30)
+
+        self.send_command(0xAA)    # CMDH
+        self.send_data(0x49)
+        self.send_data(0x55)
+        self.send_data(0x20)
+        self.send_data(0x08)
+        self.send_data(0x09)
+        self.send_data(0x18)
+
+        self.send_command(self.POWER_SETTING)
+        self.send_data(0x3F)
+        self.send_data(0x00)
+        self.send_data(0x32)
+        self.send_data(0x2A)
+        self.send_data(0x0E)
+        self.send_data(0x2A)
+
+        self.send_command(self.PANEL_SETTING)
+        self.send_data(0x5F)
+        self.send_data(0x69)
+
+        self.send_command(self.POWER_OFF_SEQUENCE_SETTING)
+        self.send_data(0x00)
+        self.send_data(0x54)
+        self.send_data(0x00)
+        self.send_data(0x44)
+
+        self.send_command(self.POWER_ON_MEASURE)
+        self.send_data(0x40)
+        self.send_data(0x1F)
+        self.send_data(0x1F)
+        self.send_data(0x2C)
+
+        self.send_command(self.BOOSTER_SOFT_START)
+        self.send_data(0x6F)
+        self.send_data(0x1F)
+        self.send_data(0x1F)
+        self.send_data(0x22)
+
+        self.send_command(0x08)
+        self.send_data(0x6F)
+        self.send_data(0x1F)
+        self.send_data(0x1F)
+        self.send_data(0x22)
+
+        self.send_command(self.DATA_START_TRANSMISSION_2)   # IPC
+        self.send_data(0x00)
+        self.send_data(0x04)
+
+        self.send_command(self.PLL_CONTROL)   # PLL
+        self.send_data(0x3C)
+
+        self.send_command(self.TEMPERATURE_SENSOR_SELECTION)  # TSE
+        self.send_data(0x00)
+
+        self.send_command(self.VCOM_AND_DATA_INTERVAL_SETTING)
+        self.send_data(0x3F)
+
+        self.send_command(self.TCON_SETTING)
+        self.send_data(0x02)
+        self.send_data(0x00)
+
+        self.send_command(self.RESOLUTION_SETTING)
+        self.send_data(0x03)
+        self.send_data(0x20)
+        self.send_data(0x01)
+        self.send_data(0xE0)
+
+        self.send_command(self.VCM_DC_SETTING)
+        self.send_data(0x1E)
+
+        self.send_command(0x84)
+        self.send_data(0x00)
+
+        self.send_command(0x86)   # AGID
+        self.send_data(0x00)
+
+        self.send_command(self.POWER_SAVING)
+        self.send_data(0x2F)
+
+        self.send_command(0xE0)   # CCSET
+        self.send_data(0x00)
+       
+        self.send_command(0xE6)   # TSSET
+        self.send_data(0x00)
+
+
+
+       
+
+    def get_frame_buffer(self, image, reverse=False):
+        buf = [0x00] * int(self.width * self.height / 2)
+
+        # quantize image with palette of possible colors
+        image_palette = Image.new('P', (1, 1))
+        image_palette.putpalette(([0, 0, 0, 255, 255, 255, 0, 255, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, 128, 0]
+                                  + [0, 0, 0]) * 32) # multiply by 32 to pad palette to reach required length of 768
+        image_rgb = image.quantize(palette=image_palette).convert('RGB')
+
+        imwidth, imheight = image_rgb.size
+
+        if imwidth != self.width or imheight != self.height:
+            raise ValueError('Image must be same dimensions as display \
+                ({0}x{1}).'.format(self.width, self.height))
+
+        pixels = image_rgb.load()
+
+        for y in range(self.height):
+            for x in range(self.width):
+                pos = int((x + y * self.width) / 2)
+                color = 0
+
+                if pixels[x, y][0] == 0 and pixels[x, y][1] == 0 and pixels[x, y][2] == 0:
+                    color = 0
+                elif pixels[x, y][0] == 255 and pixels[x, y][1] == 255 and pixels[x, y][2] == 255:
+                    color = 1
+                elif pixels[x, y][0] == 0 and pixels[x, y][1] == 255 and pixels[x, y][2] == 0:
+                    color = 2
+                elif pixels[x, y][0] == 0 and pixels[x, y][1] == 0 and pixels[x, y][2] == 255:
+                    color = 3
+                elif pixels[x, y][0] == 255 and pixels[x, y][1] == 0 and pixels[x, y][2] == 0:
+                    color = 4
+                elif pixels[x, y][0] == 255 and pixels[x, y][1] == 255 and pixels[x, y][2] == 0:
+                    color = 5
+                elif pixels[x, y][0] == 255 and pixels[x, y][1] == 128 and pixels[x, y][2] == 0:
+                    color = 6
+
+                data_t = buf[pos] & (~(0xF0 >> ((x % 2) * 4)))
+                buf[pos] = data_t | ((color << 4) >> ((x % 2) * 4))
+
+        return buf
+
+    def display_frame(self, frame_buffer, *args):
+        self.send_command(self.DATA_START_TRANSMISSION_1)
+        for i in range(0, int(self.height)):
+            for j in range(0, int(self.width / 2)):
+                self.send_data((frame_buffer[j + (int(self.width / 2) * i)]))
+        self.turn_on_display()
+
+    def sleep(self):
+        self.send_command(self.DEEP_SLEEP)
+        self.send_data(0xA5)
+
+        self.delay_ms(2000)
+
+    def turn_on_display(self):
+        self.send_command(self.POWER_ON) # POWER_ON
+        self.wait_until_busy()
+
+        self.send_command(self.DISPLAY_REFRESH) # DISPLAY_REFRESH
+        self.send_data(0X00)
+        self.wait_until_busy()
+
+        self.send_command(self.POWER_OFF) # POWER_OFF
+        self.send_data(0X00)
+        self.wait_until_idle()
