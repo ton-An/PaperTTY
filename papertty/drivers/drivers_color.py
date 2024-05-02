@@ -673,6 +673,15 @@ class EPD7in3f(WaveshareColor):
         self.wait_until_busy()
         self.delay_ms(30)
 
+       
+        # self.send_command(0xAA)    # CMDH
+        # self.send_data(0x49)
+        # self.send_data(0x55)
+        # self.send_data(0x20)
+        # self.send_data(0x08)
+        # self.send_data(0x09)
+        # self.send_data(0x18)
+
         self.send_command(0xAA)    # CMDH
         self.send_data(0x49)
         self.send_data(0x55)
@@ -680,6 +689,14 @@ class EPD7in3f(WaveshareColor):
         self.send_data(0x08)
         self.send_data(0x09)
         self.send_data(0x18)
+
+        # self.send_command(0x01)
+        # self.send_data(0x3F)
+        # self.send_data(0x00)
+        # self.send_data(0x32)
+        # self.send_data(0x2A)
+        # self.send_data(0x0E)
+        # self.send_data(0x2A)
 
         self.send_command(self.POWER_SETTING)
         self.send_data(0x3F)
@@ -689,10 +706,19 @@ class EPD7in3f(WaveshareColor):
         self.send_data(0x0E)
         self.send_data(0x2A)
 
+        # self.send_command(0x00)
+        # self.send_data(0x5F)
+        # self.send_data(0x69)
+
         self.send_command(self.PANEL_SETTING)
         self.send_data(0x5F)
         self.send_data(0x69)
 
+        # self.send_command(0x03)
+        # self.send_data(0x00)
+        # self.send_data(0x54)
+        # self.send_data(0x00)
+        # self.send_data(0x44) 
 
         self.send_command(self.POWER_OFF_SEQUENCE_SETTING)
         self.send_data(0x00)
@@ -700,11 +726,23 @@ class EPD7in3f(WaveshareColor):
         self.send_data(0x00)
         self.send_data(0x44)
 
+        # self.send_command(0x05)
+        # self.send_data(0x40)
+        # self.send_data(0x1F)
+        # self.send_data(0x1F)
+        # self.send_data(0x2C)
+
         self.send_command(self.POWER_ON_MEASURE)
         self.send_data(0x40)
         self.send_data(0x1F)
         self.send_data(0x1F)
         self.send_data(0x2C)
+
+        # self.send_command(0x06)
+        # self.send_data(0x6F)
+        # self.send_data(0x1F)
+        # self.send_data(0x1F)
+        # self.send_data(0x22)
 
         self.send_command(self.BOOSTER_SOFT_START)
         self.send_data(0x6F)
@@ -712,49 +750,98 @@ class EPD7in3f(WaveshareColor):
         self.send_data(0x1F)
         self.send_data(0x22)
 
+        # self.send_command(0x08) !!
+        # self.send_data(0x6F)
+        # self.send_data(0x1F)
+        # self.send_data(0x1F)
+        # self.send_data(0x22)
+
         self.send_command(0x08)
         self.send_data(0x6F)
         self.send_data(0x1F)
         self.send_data(0x1F)
         self.send_data(0x22)
+        
 
-        self.send_command(self.DATA_START_TRANSMISSION_2)   # IPC
+        # self.send_command(0x13)    # IPC
+        # self.send_data(0x00)
+        # self.send_data(0x04)
+
+        self.send_command(0x13)   # IPC
         self.send_data(0x00)
         self.send_data(0x04)
+
+        # self.send_command(0x30)
+        # self.send_data(0x3C)
 
         self.send_command(self.PLL_CONTROL)   # PLL
         self.send_data(0x3C)
 
-        self.send_command(self.TEMPERATURE_SENSOR_SELECTION)  # TSE
+        # self.send_command(0x41)     # TSE
+        # self.send_data(0x00)
+
+        self.send_command(0x41)  # TSE
         self.send_data(0x00)
+
+        # self.send_command(0x50)
+        # self.send_data(0x3F)
 
         self.send_command(self.VCOM_AND_DATA_INTERVAL_SETTING)
         self.send_data(0x3F)
+
+        # self.send_command(0x60)
+        # self.send_data(0x02)
+        # self.send_data(0x00)
 
         self.send_command(self.TCON_SETTING)
         self.send_data(0x02)
         self.send_data(0x00)
 
-        self.send_command(self.RESOLUTION_SETTING)
+        # self.send_command(0x61)
+        # self.send_data(0x03)
+        # self.send_data(0x20)
+        # self.send_data(0x01) 
+        # self.send_data(0xE0)
+
+        self.send_command(0x61)
         self.send_data(0x03)
         self.send_data(0x20)
         self.send_data(0x01)
         self.send_data(0xE0)
 
+
+        # self.send_command(0x82)
+        # self.send_data(0x1E) 
+
         self.send_command(self.VCM_DC_SETTING)
         self.send_data(0x1E)
+
+        # self.send_command(0x84)
+        # self.send_data(0x00)
 
         self.send_command(0x84)
         self.send_data(0x00)
 
+        # self.send_command(0x86)    # AGID
+        # self.send_data(0x00)
+
         self.send_command(0x86)   # AGID
         self.send_data(0x00)
+
+        # self.send_command(0xE3)
+        # self.send_data(0x2F)
 
         self.send_command(self.POWER_SAVING)
         self.send_data(0x2F)
 
+        # self.send_command(0xE0)   # CCSET
+        # self.send_data(0x00) 
+
         self.send_command(0xE0)   # CCSET
         self.send_data(0x00)
+
+        # self.send_command(0xE6)   # TSSET
+        # self.send_data(0x00)
 
         self.send_command(0xE6)   # TSSET
         self.send_data(0x00)
