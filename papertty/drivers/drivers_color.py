@@ -846,10 +846,6 @@ class EPD7in3f(WaveshareColor):
         self.send_command(0xE6)   # TSSET
         self.send_data(0x00)
 
-
-
-       
-
     def get_frame_buffer(self, image, reverse=False):
         buf = [0x00] * int(self.width * self.height / 2)
 
@@ -857,7 +853,7 @@ class EPD7in3f(WaveshareColor):
         image_palette = Image.new('P', (1, 1))
         image_palette.putpalette(([0, 0, 0, 255, 255, 255, 0, 255, 0, 0, 0, 255, 255, 0, 0, 255, 255, 0, 255, 128, 0]
                                   + [0, 0, 0]) * 32) # multiply by 32 to pad palette to reach required length of 768
-        image_rgb = image.quantize(palette=image_palette).convert('RGB')
+        image_rgb = image.convert('RGB').quantize(palette=image_palette).convert('RGB')
 
         imwidth, imheight = image_rgb.size
 
@@ -871,7 +867,7 @@ class EPD7in3f(WaveshareColor):
             for x in range(self.width):
                 pos = int((x + y * self.width) / 2)
                 color = 0
-
+                
                 if pixels[x, y][0] == 0 and pixels[x, y][1] == 0 and pixels[x, y][2] == 0:
                     color = 0
                 elif pixels[x, y][0] == 255 and pixels[x, y][1] == 255 and pixels[x, y][2] == 255:
